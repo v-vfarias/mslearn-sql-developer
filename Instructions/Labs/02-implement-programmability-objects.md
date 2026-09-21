@@ -2,14 +2,12 @@
 lab:
     title: 'Lab 2 – Implement programmability objects with SQL'
     module: 'Implement programmability objects with SQL'
-    description: This exercise will help you create and use core SQL Server programmability objects including views, stored procedures, functions, and triggers.
-    level: 300
-    duration: 45 minutes
-    islab: true
-    primarytopics:
-        - SQL Server
-        - Stored Procedures
-        - T-SQL
+    description: 'This exercise will help you create and use core SQL Server programmability objects including views, stored procedures, functions, and triggers.'
+    duration: 45 # duration in minutes
+    level: 300 # 100 basic concepts, 200 foundations, 300 practical usage, 400 advanced scenarios, 500 expert design
+    islab: true # if this is not a lab that should be listed in the catalog, set to false
+    status: 'released' # in-development or released
+    targetDate: '2099-01-01' # Set to the future date when you expect an in-development lab to be released
 ---
 
 # Implement programmability objects with SQL
@@ -141,7 +139,7 @@ Encapsulate a business operation that adds an order line item to an existing ord
     END;
     ```
 
-    This stored procedure performs a transactional insert of a new line item. It first validates that the product and order exist—rolling back and throwing an error if either is invalid. After inserting the detail row with the product's list price, it recalculates the order's subtotal from all line items and updates the header. Wrapping everything in a transaction ensures the operation is atomic: either all changes succeed or none are applied.
+    This stored procedure performs a transactional insert of a new line item. It first validates that the product and order exist--rolling back and throwing an error if either is invalid. After inserting the detail row with the product's list price, it recalculates the order's subtotal from all line items and updates the header. Wrapping everything in a transaction ensures the operation is atomic: either all changes succeed or none are applied.
 
 1. Execute the following T-SQL code to test the stored procedure.
 
@@ -178,9 +176,11 @@ Create a scalar function that returns the total value of an order using Adventur
         AS
         BEGIN
         	DECLARE @Total DECIMAL(18,2);
+
         	SELECT @Total = SUM(LineTotal)
         	FROM SalesLT.SalesOrderDetail
         	WHERE SalesOrderID = @OrderID;
+
         	RETURN ISNULL(@Total, 0.00);
         END;
     ```
@@ -211,8 +211,8 @@ Build a `TVF` to return orders for a given customer from AdventureWorksLT. `TVF`
     	SELECT 
     		h.SalesOrderID,
     		h.OrderDate
-    		FROM SalesLT.SalesOrderHeader h
-    		WHERE h.CustomerID = @CustomerID
+    	FROM SalesLT.SalesOrderHeader h
+    	WHERE h.CustomerID = @CustomerID
     );
     ```
 
@@ -220,7 +220,7 @@ Build a `TVF` to return orders for a given customer from AdventureWorksLT. `TVF`
 
     ```sql
     SELECT * 
-    FROM dbo.GetCustomerOrders(1)
+    FROM dbo.GetCustomerOrders(29929)
     ORDER BY OrderDate DESC;
     ```
 
@@ -229,8 +229,8 @@ Build a `TVF` to return orders for a given customer from AdventureWorksLT. `TVF`
     ```sql
     SELECT CONCAT(c.FirstName, ' ', c.LastName) AS CustomerName, o.SalesOrderID, o.OrderDate
     FROM SalesLT.Customer c
-    INNER JOIN dbo.GetCustomerOrders(c.CustomerID) o ON 1 = 1
-    WHERE c.CustomerID = 1;
+        CROSS APPLY dbo.GetCustomerOrders(c.CustomerID) o
+    WHERE c.CustomerID = 29929;
     ```
 
 ---
@@ -262,27 +262,39 @@ Add a trigger that logs updates to order totals when *SalesLT* order details cha
     AS
     BEGIN
         SET NOCOUNT ON;
-        ;WITH A AS (
+
+        ;WITH AffectedOrders AS (
             SELECT SalesOrderID FROM inserted
             UNION
             SELECT SalesOrderID FROM deleted
+        ),
+        -- New totals from the base table (already reflects changes)
+        NewTotals AS (
+            SELECT d.SalesOrderID, SUM(d.OrderQty * d.UnitPrice) AS Total
+            FROM SalesLT.SalesOrderDetail d
+            INNER JOIN AffectedOrders a ON d.SalesOrderID = a.SalesOrderID
+            GROUP BY d.SalesOrderID
+        ),
+        -- Contribution of the newly inserted/updated rows
+        InsertedTotals AS (
+            SELECT SalesOrderID, SUM(OrderQty * UnitPrice) AS Total
+            FROM inserted
+            GROUP BY SalesOrderID
+        ),
+        -- Contribution of the previous row versions (empty on INSERT)
+        DeletedTotals AS (
+            SELECT SalesOrderID, SUM(OrderQty * UnitPrice) AS Total
+            FROM deleted
+            GROUP BY SalesOrderID
         )
         INSERT INTO dbo.OrderAudit (OrderID, OldTotal, NewTotal)
-        SELECT 
-            a.SalesOrderID,
-            d.Total,
-            i.Total
-        FROM (
-            SELECT SalesOrderID, SUM(OrderQty * UnitPrice) AS Total
-            FROM SalesLT.SalesOrderDetail
-            GROUP BY SalesOrderID
-        ) i
-        INNER JOIN (
-            SELECT SalesOrderID, SUM(OrderQty * UnitPrice) AS Total
-            FROM SalesLT.SalesOrderDetail
-            GROUP BY SalesOrderID
-        ) d ON i.SalesOrderID = d.SalesOrderID
-        INNER JOIN A a ON a.SalesOrderID = i.SalesOrderID;
+        SELECT
+            n.SalesOrderID,
+            n.Total - ISNULL(i.Total, 0) + ISNULL(d.Total, 0) AS OldTotal,
+            n.Total AS NewTotal
+        FROM NewTotals n
+        LEFT JOIN InsertedTotals i ON n.SalesOrderID = i.SalesOrderID
+        LEFT JOIN DeletedTotals d ON n.SalesOrderID = d.SalesOrderID;
     END;
     ```
 
