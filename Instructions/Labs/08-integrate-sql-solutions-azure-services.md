@@ -124,8 +124,10 @@ The DAB CLI helps you create and manage configuration files.
 1. Install the Data API Builder CLI using .NET:
 
     ```bash
-    dotnet tool install --global Microsoft.DataApiBuilder
+    dotnet tool install --global Microsoft.DataApiBuilder --version 2.0.12
     ```
+
+    > &#128221; This lab pins Data API Builder to version `2.0.12`. If an unversioned installation fails with `Settings file 'DotnetToolSettings.xml' was not found in the package`, the latest package published to NuGet is invalid. Install the pinned version shown above instead.
 
 1. Verify the installation:
 
@@ -160,7 +162,7 @@ Use the DAB CLI to create a baseline configuration file.
 
     ```json
     {
-      "$schema": "https://github.com/Azure/data-api-builder/releases/latest/download/dab.draft.schema.json",
+      "$schema": "https://github.com/Azure/data-api-builder/releases/download/v2.0.12/dab.draft.schema.json",
       "data-source": {
         "database-type": "mssql",
         "connection-string": "@env('DATABASE_CONNECTION_STRING')"
@@ -189,7 +191,7 @@ Add the Categories and Products tables as API entities.
 1. Add Product entity with anonymous read
 
     ```bash
-    dab add Product --source dbo.Products --permissions "anonymous:read
+    dab add Product --source dbo.Products --permissions "anonymous:read"
     ```
 
 1. Add authenticated full CRUD
@@ -317,6 +319,14 @@ Run Data API Builder locally to verify your configuration.
     # For Bash
     export DATABASE_CONNECTION_STRING="Server=your-server;Database=ProductCatalog;User Id=your-user;Password=your-password;TrustServerCertificate=true"
     ```
+
+1. Validate the configuration and database objects:
+
+    ```bash
+    dab validate --config dab-config.json
+    ```
+
+    A successful validation ends with `Config is valid`.
 
 1. Start Data API Builder:
 
