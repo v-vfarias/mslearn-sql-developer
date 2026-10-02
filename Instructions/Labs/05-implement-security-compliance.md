@@ -2,15 +2,12 @@
 lab:
     title: 'Lab 5 – Implement security and compliance with SQL'
     module: 'Implement security and compliance with SQL'
-    description: This exercise will help you implement security features such as Dynamic Data Masking and Row-Level Security to protect sensitive data in a SQL database.
-    level: 300
-    duration: 30 minutes
-    islab: true
-    primarytopics:
-        - Azure SQL Database
-        - Security
-        - Dynamic Data Masking
-        - Row-Level Security
+    description: 'This exercise will help you implement security features such as Dynamic Data Masking and Row-Level Security to protect sensitive data in a SQL database.'
+    duration: 30 # duration in minutes
+    level: 300 # 100 basic concepts, 200 foundations, 300 practical usage, 400 advanced scenarios, 500 expert design
+    islab: true # if this is not a lab that should be listed in the catalog, set to false
+    status: 'released' # in-development or released
+    targetDate: '2099-01-01' # Set to the future date when you expect an in-development lab to be released
 ---
 
 # Implement security and compliance with SQL
@@ -36,8 +33,8 @@ You are a database developer who needs to protect employee and customer data whi
 First, create an Azure SQL Database for the security exercises.
 
 1. Sign in to the [Azure portal](https://portal.azure.com).
-1. Navigate to the **Azure SQL** page, and then select **+ Create**.
-1. Select **SQL databases**, **Single database**, and then select the **Create** button.
+1. Navigate to the **Azure SQL** page, in the resource menu expand **Azure SQL Database**, and then select **SQL databases**.
+1. Select **+ Create** and select **SQL database**.
 1. Fill in the required information on the **Create SQL Database** page:
 
     | Setting | Value |

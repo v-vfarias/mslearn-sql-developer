@@ -2,15 +2,12 @@
 lab:
     title: 'Lab 7 - Implement CI/CD with SQL Database Projects'
     module: 'Implement CI/CD by using SQL Database Projects'
-    description: This exercise will help you create a SQL database project, build it locally, push it to GitHub, and configure a GitHub Actions pipeline for automated schema deployment.
-    level: 300
-    duration: 45 minutes
-    islab: true
-    primarytopics:
-        - Azure SQL Database
-        - CI/CD
-        - GitHub Actions
-        - SQL Database Projects
+    description: 'This exercise will help you create a SQL database project, build it locally, push it to GitHub, and configure a GitHub Actions pipeline for automated schema deployment.'
+    duration: 45 # duration in minutes
+    level: 300 # 100 basic concepts, 200 foundations, 300 practical usage, 400 advanced scenarios, 500 expert design
+    islab: true # if this is not a lab that should be listed in the catalog, set to false
+    status: 'released' # in-development or released
+    targetDate: '2099-01-01' # Set to the future date when you expect an in-development lab to be released
 ---
 
 # Implement CI/CD with SQL Database Projects
@@ -51,7 +48,11 @@ First, create an Azure SQL Database with sample data.
     | **Subscription** | Select your Azure subscription. |
     | **Resource group** | Select or create a resource group. |
     | **Database name** | *AdventureWorksLT* |
-    | **Server** | Select **Create new** and create a new server with a unique name. Select your **Location**. You should use **Use Microsoft Entra-only authentication** for more secure access, or **Use both SQL and Microsoft Entra authentication**/**SQL authentication** with an admin sign in and password, but note that *Microsoft Entra-only authentication* is recommended. Select **OK**. |
+    | **Server** | Select **Create new** and create a new server with a unique name. Select your **Location**. For authentication, select one of the following options and then select **OK**: |
+
+    > &#128221; **Authentication is not optional.** You must choose the method that matches your organization's security policies. Each option affects how you connect to the database later:
+    > - **Use Microsoft Entra-only authentication** *(recommended)*: Select this if your organization requires Entra-based access. Set your Azure account as the **Microsoft Entra admin**. You connect to the database using your Microsoft Entra account (for example, in SSMS select *Authentication* = **Microsoft Entra MFA**).
+    > - **Use both SQL and Microsoft Entra authentication/SQL authentication**: Select this if you prefer a SQL admin login or your organization allows both methods. Provide a **Server admin login** and **Password**. You need these credentials to connect. You can also set a **Microsoft Entra admin** to enable Entra logins alongside SQL auth.
 
     > &#128221; If you already have a test server you can use, select it instead of creating a new one.
 
